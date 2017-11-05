@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">HabitTracker</string>
+    <string name="habitName">Habit Name</string>
+    <string name="habitDays">Working Days</string>
+</resources>
