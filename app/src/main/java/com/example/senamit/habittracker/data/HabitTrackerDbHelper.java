@@ -9,11 +9,11 @@ import com.example.senamit.habittracker.data.HabitContract.*;
 public class HabitTrackerDbHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "habit";
-    public static final int DATABASE_VERSION = 5;
+    public static final int DATABASE_VERSION = 7;
 
     private static final String SQL_CREATE_ENTERIES = "CREATE TABLE " +
             Habitentry.TABLE_NAME + "(" + Habitentry._ID + " INTEGER PRIMARY KEY," +
-            Habitentry.COLUMN_HABIT_NAME + " TEXT NOT NULL, " + Habitentry.COLUMN_NUMBER_OF_DAYS + " TEXT NOT NULL)";
+            Habitentry.COLUMN_HABIT_NAME + " TEXT NOT NULL, " + Habitentry.COLUMN_NUMBER_OF_DAYS + " INTEGER NOT NULL)";
 
     private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS " + Habitentry.TABLE_NAME;
 

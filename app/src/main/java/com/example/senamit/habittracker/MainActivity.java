@@ -5,6 +5,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,7 +22,10 @@ public class MainActivity extends AppCompatActivity {
     private SQLiteDatabase db;
     private EditText edtHabitName;
     private EditText edtDays;
-
+    Cursor cursor;
+    private TextView displayHabit;
+    private int habitDays = 0;
+    public static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         edtHabitName = (EditText) findViewById(R.id.edt_habit_name);
         edtDays = (EditText) findViewById(R.id.edt_days);
         Button btnSubmit = (Button) findViewById(R.id.btn_submit);
+        displayHabit = (TextView) findViewById(R.id.display_habit);
 
         habitTrackerDbHelper = new HabitTrackerDbHelper(MainActivity.this);
 
@@ -37,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 insertData();
-                displayDatabaseInfo();
+                cursor = queryAllHabits();
+                displayDatabaseInfo(cursor);
                 edtHabitName.setText("");
                 edtDays.setText("");
             }
@@ -46,17 +53,21 @@ public class MainActivity extends AppCompatActivity {
                 db = habitTrackerDbHelper.getWritableDatabase();
                 ContentValues contentValues = new ContentValues();
                 String habitName = edtHabitName.getText().toString().trim();
-                String habitDays = edtDays.getText().toString().trim();
-                contentValues.put(Habitentry.COLUMN_HABIT_NAME, habitName);
-                contentValues.put(Habitentry.COLUMN_NUMBER_OF_DAYS, habitDays);
-                long RowId = db.insert(Habitentry.TABLE_NAME, null, contentValues);
+                if (!TextUtils.isEmpty(habitName)) {
+                    contentValues.put(Habitentry.COLUMN_HABIT_NAME, habitName);
+                }
 
+                String habitNumberOfDays = edtDays.getText().toString();
+                if (!TextUtils.isEmpty(habitNumberOfDays)) {
+                    habitDays = Integer.parseInt(habitNumberOfDays);
+                    contentValues.put(Habitentry.COLUMN_NUMBER_OF_DAYS, habitDays);
+                }
+
+                long RowId = db.insert(Habitentry.TABLE_NAME, null, contentValues);
                 if (RowId == -1) {
                     Toast.makeText(MainActivity.this, "unsuccessful", Toast.LENGTH_SHORT).show();
-
                 } else {
                     Toast.makeText(MainActivity.this, "successful", Toast.LENGTH_SHORT).show();
-
                 }
             }
         });
@@ -65,10 +76,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        displayDatabaseInfo();
+        cursor = queryAllHabits();
+        displayDatabaseInfo(cursor);
     }
 
-    private void displayDatabaseInfo() {
+    private Cursor queryAllHabits() {
         db = habitTrackerDbHelper.getReadableDatabase();
         String[] projection = {Habitentry._ID, Habitentry.COLUMN_HABIT_NAME, Habitentry.COLUMN_NUMBER_OF_DAYS};
         Cursor cursor = db.query(
@@ -79,11 +91,13 @@ public class MainActivity extends AppCompatActivity {
                 null,
                 null,
                 null);
+        return cursor;
+    }
 
-        TextView displayHabit = (TextView) findViewById(R.id.display_habit);
+    private void displayDatabaseInfo(Cursor cursor) {
+
+        displayHabit.setText("the number of rows is " + cursor.getCount());
         try {
-            displayHabit.setText("the number of rows is " + cursor.getCount());
-
             int idColumnIndex = cursor.getColumnIndex(Habitentry._ID);
             int habitNameColumnIndex = cursor.getColumnIndex(Habitentry.COLUMN_HABIT_NAME);
             int numberOfDaysColumnIndex = cursor.getColumnIndex(Habitentry.COLUMN_NUMBER_OF_DAYS);
